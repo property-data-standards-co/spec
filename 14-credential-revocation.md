@@ -1,4 +1,4 @@
-# PDTF 2.0 — Sub-spec 14: Credential Revocation
+# 14 Credential Revocation
 
 **Version:** 0.2 (Draft)
 **Date:** 1 April 2026
@@ -36,7 +36,7 @@ Credential revocation is the mechanism by which an issuer declares that a creden
 
 ### Why Revocation Is Critical in Property Transactions
 
-**Ownership changes.** When a property sale completes, the seller's ownership credential becomes false. Title transfers to the buyer. Any credential asserting the seller's ownership MUST be revoked immediately upon completion, and a new credential issued to the buyer. Failure to revoke creates a window where two parties could both present valid ownership claims.
+**SellerCapacity changes.** When a property sale completes, the seller's ownership credential becomes false. Title transfers to the buyer. Any credential asserting the seller's ownership MUST be revoked immediately upon completion, and a new credential issued to the buyer. Failure to revoke creates a window where two parties could both present valid ownership claims.
 
 **Mandate withdrawal.** A seller may change conveyancer mid-transaction, or revoke a conveyancer's authority to act on their behalf. The representation credential linking conveyancer to seller MUST be revocable independently of the transaction lifecycle.
 
@@ -528,9 +528,9 @@ RETURNING next_index - 1 AS allocated_index;
 
 This section details the revocation process for each credential type in the PDTF 2.0 ecosystem. Each flow identifies the trigger event, the initiating party, the system actions, and the status list update.
 
-### 7.1 Ownership Credential Revocation
+### 7.1 SellerCapacity Credential Revocation
 
-Ownership credentials assert that a party holds legal title to a property. They are revoked when ownership changes.
+SellerCapacity credentials assert that a party holds legal title to a property. They are revoked when ownership changes.
 
 **Trigger:** Sale completion (transfer of title registered at Land Registry)
 
@@ -548,7 +548,7 @@ Ownership credentials assert that a party holds legal title to a property. They 
    │ SELECT credential_id, list_id, status_index   │
    │ FROM credential_status                         │
    │ WHERE subject_did = {seller_did}               │
-   │   AND credential_type = 'OwnershipCredential'  │
+   │   AND credential_type = 'SellerCapacityCredential'  │
    │   AND revoked_at IS NULL                       │
    └───┬───────────────────────────────────────────┘
        │
@@ -566,7 +566,7 @@ Ownership credentials assert that a party holds legal title to a property. They 
    │ WHERE credential_id = {credential_id}          │
    └───┬───────────────────────────────────────────┘
        │
-8. Issue new OwnershipCredential to buyer
+8. Issue new SellerCapacityCredential to buyer
 ```
 
 **Timing:** Revocation MUST occur before or simultaneously with the new ownership credential issuance. There MUST NOT be a window where both the old and new ownership credentials are valid.
@@ -1063,7 +1063,7 @@ PDTF 2.0 mandates **fail closed** for high-stakes credentials:
 
 | Credential Type | On Status List Unavailable | Rationale |
 |----------------|---------------------------|-----------|
-| OwnershipCredential | **REJECT** | Cannot risk accepting revoked ownership |
+| SellerCapacityCredential | **REJECT** | Cannot risk accepting revoked ownership |
 | RepresentationCredential | **REJECT** | Cannot risk accepting revoked mandate |
 | DelegatedConsent | **REJECT** | Cannot risk granting revoked access |
 | Property data VCs | **WARN + ACCEPT** (configurable) | Lower risk; data may still be valid |

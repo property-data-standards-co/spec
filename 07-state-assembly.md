@@ -1,4 +1,4 @@
-# PDTF 2.0 — Sub-spec 07: State Assembly
+# 07 State Assembly
 
 **Version:** 0.2 (Draft)
 **Date:** 1 April 2026
@@ -194,7 +194,7 @@ The composer must determine which entity type each credential targets. This is r
 1. **`credentialSubject.id` prefix** — URN scheme reveals entity type:
    - `urn:pdtf:uprn:*` → Property
    - `urn:pdtf:titleNumber:*` / `urn:pdtf:unregisteredTitle:*` → Title
-   - `urn:pdtf:ownership:*` → Ownership
+   - `urn:pdtf:capacity:*` → SellerCapacity
    - `urn:pdtf:representation:*` → Representation
    - `urn:pdtf:consent:*` → DelegatedConsent
    - `urn:pdtf:offer:*` → Offer
@@ -510,12 +510,12 @@ The composed v4 state follows the structure defined in [Sub-spec 01 §6](./01-en
   },
 
   "ownership": {
-    "urn:pdtf:ownership:own-1": {
+    "urn:pdtf:capacity:own-1": {
       "personId": "did:key:z6Mkh...seller1",
       "titleId": "urn:pdtf:titleNumber:AB12345",
       "status": "verified"
     },
-    "urn:pdtf:ownership:own-2": {
+    "urn:pdtf:capacity:own-2": {
       "personId": "did:key:z6Mkh...seller2",
       "titleId": "urn:pdtf:titleNumber:AB12345",
       "status": "verified"
@@ -619,7 +619,7 @@ The most complex transformation. V4 decomposes v3's `participants[]` array into 
 function reconstructParticipants(v4State: ComposedStateV4): Participant[] {
   const participants: Participant[] = [];
 
-  // 1. Sellers — persons with Ownership credentials
+  // 1. Sellers — persons with SellerCapacity credentials
   for (const [ownId, ownership] of Object.entries(v4State.ownership)) {
     const person = v4State.persons[ownership.personId];
     if (!person) continue;
@@ -1000,7 +1000,7 @@ interface Branch {
 }
 ```
 
-### 6.6 Another Example — Ownership Type Discriminator
+### 6.6 Another Example — SellerCapacity Type Discriminator
 
 **Before pruning:**
 ```json
@@ -1369,7 +1369,7 @@ V3: participants[] (mixed array of all participant types)
     ↕
 V4: persons{}            — keyed by did:key
     organisations{}      — keyed by did:web
-    ownership{}          — keyed by urn:pdtf:ownership:*
+    ownership{}          — keyed by urn:pdtf:capacity:*
     representation{}     — keyed by urn:pdtf:representation:*
     delegatedConsent{}   — keyed by urn:pdtf:consent:*
 ```

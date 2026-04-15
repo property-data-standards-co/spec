@@ -1,4 +1,4 @@
-# PDTF 2.0 — Sub-spec 03: DID Methods & Identifiers
+# 03 DID Methods & Identifiers
 
 **Version:** 0.2 (Draft)
 **Date:** 1 April 2026
@@ -199,7 +199,7 @@ Registrant: Property Data Standards Company
 | `urn:pdtf:uprn:{uprn}` | Property | Ordnance Survey UPRN (Unique Property Reference Number) |
 | `urn:pdtf:titleNumber:{number}` | Title (registered) | HMLR title number |
 | `urn:pdtf:unregisteredTitle:{uuid}` | Title (unregistered) | Platform-generated UUID v4 (D23) |
-| `urn:pdtf:ownership:{uuid}` | Ownership claim | Platform-generated UUID v4 |
+| `urn:pdtf:capacity:{uuid}` | SellerCapacity claim | Platform-generated UUID v4 |
 | `urn:pdtf:representation:{uuid}` | Representation mandate | Platform-generated UUID v4 |
 | `urn:pdtf:consent:{uuid}` | Delegated consent | Platform-generated UUID v4 |
 | `urn:pdtf:offer:{uuid}` | Offer | Platform-generated UUID v4 |
@@ -232,7 +232,7 @@ district-prefix   = 1*4ALPHA
 ; Unregistered Title — UUID v4 (D23)
 unregistered-title-urn = "unregisteredTitle:" uuid-v4
 
-; Ownership — UUID v4
+; SellerCapacity — UUID v4
 ownership-urn     = "ownership:" uuid-v4
 
 ; Representation — UUID v4
@@ -264,7 +264,7 @@ urn:pdtf:uprn:100023456789
 urn:pdtf:titleNumber:DN123456
 urn:pdtf:titleNumber:AGL12345
 urn:pdtf:unregisteredTitle:f47ac10b-58cc-4372-a567-0e02b2c3d479
-urn:pdtf:ownership:7c9e6679-7425-40de-944b-e07fc1f90ae7
+urn:pdtf:capacity:7c9e6679-7425-40de-944b-e07fc1f90ae7
 urn:pdtf:representation:a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d
 urn:pdtf:consent:b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e
 urn:pdtf:offer:c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f
@@ -285,7 +285,7 @@ The boundary is clear: **actors get DIDs, subjects get URNs**.
 - **Transactions** host endpoints (PDTF API, MCP) → `did:web`
 - **Properties** are credential subjects, never issuers → `urn:pdtf:uprn:*`
 - **Titles** are credential subjects → `urn:pdtf:titleNumber:*`
-- **Ownership, Representation, Consent, Offer** are credential subjects → `urn:pdtf:{type}:{uuid}`
+- **SellerCapacity, Representation, Consent, Offer** are credential subjects → `urn:pdtf:{type}:{uuid}`
 
 ---
 
@@ -523,7 +523,7 @@ For the HMLR Official Copies adapter at `did:web:adapters.propdata.org.uk:hmlr`,
       "description": "Request HMLR Official Copies as Verifiable Credentials",
       "credentialTypes": [
         "TitleCredential",
-        "OwnershipCredential"
+        "SellerCapacityCredential"
       ]
     },
     {
@@ -652,7 +652,7 @@ The primary API for interacting with a PDTF transaction.
 | Get entity | `GET` | `/entities/{entityType}/{id}` |
 | Verify credential | `POST` | `/credentials/verify` |
 
-**Authentication:** Credential presentation (Ownership, Representation, or DelegatedConsent VC) with DID Auth challenge-response. Public endpoints (state/v3, state/v4 for public-only data) may be unauthenticated.
+**Authentication:** Credential presentation (SellerCapacity, Representation, or DelegatedConsent VC) with DID Auth challenge-response. Public endpoints (state/v3, state/v4 for public-only data) may be unauthenticated.
 
 ### 6.2 McpEndpoint
 
@@ -681,7 +681,7 @@ Used by Trusted Adapters to advertise their credential issuance capability.
   "type": "VcIssuanceEndpoint",
   "serviceEndpoint": "https://adapters.propdata.org.uk/hmlr/credentials/issue",
   "description": "Request HMLR Official Copies as Verifiable Credentials",
-  "credentialTypes": ["TitleCredential", "OwnershipCredential"]
+  "credentialTypes": ["TitleCredential", "SellerCapacityCredential"]
 }
 ```
 
@@ -863,11 +863,11 @@ When a Person needs a new key (compromise, device loss, routine rotation):
 ```
 
 3. Update all credentials that reference the old DID:
-   - Re-issue Ownership credentials with new DID
+   - Re-issue SellerCapacity credentials with new DID
    - Re-issue Representation credentials with new DID
    - Previous credentials remain valid (signed by old key) but point to a now-superseded DID
 
-4. If old key is compromised and unavailable, the Person must re-establish their identity through out-of-band verification (e.g., re-verification by the platform, re-issuance of Ownership credentials).
+4. If old key is compromised and unavailable, the Person must re-establish their identity through out-of-band verification (e.g., re-verification by the platform, re-issuance of SellerCapacity credentials).
 
 #### 8.2.2 did:web Rotation
 
@@ -938,7 +938,7 @@ If a firm ceases to operate (SRA de-registration, company dissolution):
 
 - The private key is securely destroyed
 - Any credentials issued by this DID remain verifiable (signatures are still valid) but new credentials cannot be created
-- Ownership and Representation credentials referencing this DID should be revoked if the person is withdrawing from the transaction
+- SellerCapacity and Representation credentials referencing this DID should be revoked if the person is withdrawing from the transaction
 
 ---
 
@@ -1159,7 +1159,7 @@ This generates the key pair, constructs the DID document with regulatory metadat
 | Property | URN | `urn:pdtf:uprn:{uprn}` | `urn:pdtf:uprn:100023456789` |
 | Title (registered) | URN | `urn:pdtf:titleNumber:{number}` | `urn:pdtf:titleNumber:DN123456` |
 | Title (unregistered) | URN | `urn:pdtf:unregisteredTitle:{uuid}` | `urn:pdtf:unregisteredTitle:f47ac10b-58cc-4372-a567-0e02b2c3d479` |
-| Ownership | URN | `urn:pdtf:ownership:{uuid}` | `urn:pdtf:ownership:7c9e6679-7425-40de-944b-e07fc1f90ae7` |
+| SellerCapacity | URN | `urn:pdtf:capacity:{uuid}` | `urn:pdtf:capacity:7c9e6679-7425-40de-944b-e07fc1f90ae7` |
 | Representation | URN | `urn:pdtf:representation:{uuid}` | `urn:pdtf:representation:a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d` |
 | Consent | URN | `urn:pdtf:consent:{uuid}` | `urn:pdtf:consent:b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e` |
 | Offer | URN | `urn:pdtf:offer:{uuid}` | `urn:pdtf:offer:c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f` |

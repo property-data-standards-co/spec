@@ -1,4 +1,4 @@
-# PDTF 2.0 — Sub-spec 06: Key Management
+# 06 Key Management
 
 **Version:** 0.2 (Draft)
 **Date:** 1 April 2026
@@ -637,9 +637,9 @@ no longer controls (if the old key is disabled).
 
 **Implications:**
 
-1. **All credentials must be re-issued.** Ownership, Representation, DelegatedConsent — every VC where the user is the `credentialSubject` or `issuer` must be re-created with the new DID.
+1. **All credentials must be re-issued.** SellerCapacity, Representation, DelegatedConsent — every VC where the user is the `credentialSubject` or `issuer` must be re-created with the new DID.
 
-2. **Linked credentials must be updated.** If a user's DID appears in an Offer, Ownership, or Representation credential, those credentials reference the old DID. They need re-issuance.
+2. **Linked credentials must be updated.** If a user's DID appears in an Offer, SellerCapacity, or Representation credential, those credentials reference the old DID. They need re-issuance.
 
 3. **Old credentials remain verifiable** (the old key still exists in KMS), but they reference an identity the user may no longer claim.
 
