@@ -639,17 +639,21 @@ Google Cloud KMS
     └── moverly-platform-key → did:web:moverly.com
 ```
 
-### 7.5 Digital ID Wallet Binding (Future)
+### 7.5 Custodial Cloud Wallets vs Bring-Your-Own-Wallet
 
-The vision: a user's verified digital identity lives in their mobile wallet (e.g. GOV.UK Wallet, UK DCMS-approved digital ID). At onboarding:
+A strict Verifiable Credential model assumes users hold their own keys in a mobile wallet app, signing every assertion they make. In a property transaction, prompting a user to sign every page of a property information form (TA6) via a mobile app pop-up creates an unacceptable user experience.
 
-1. User authenticates via OID4VP flow (wallet presents identity credential)
-2. Wallet's DID is bound to the participation credential
-3. All subsequent attestations are signed by the user's wallet-held key
-4. Each login proves: "I am the verified person who is the seller in this transaction"
-5. Through the graph: all their attestations are provably signed by a real, verified person
+To solve this while retaining cryptographic provenance, PDTF platforms use a **Custodial Cloud Wallet** pattern:
 
-Initially, Moverly generates and manages keys on behalf of users (custodial). The wallet binding is the migration path to user-held keys. This aligns with the GOV.UK Wallet programme's direction — when government wallets launch, PDTF's OID4VP-based access model will work with them natively.
+1. **Onboarding & IDV:** The platform performs AML/ID checks and issues an Identity VC for the user.
+2. **Key Provisioning:** The platform generates a unique, secure enclave key pair (e.g. in Cloud KMS) for that specific user.
+3. **Session Binding:** When the user logs into the web portal, their session is securely bound to that cloud wallet key.
+4. **Seamless Signing:** As the user fills out forms, the platform backend uses the user's KMS key to sign the assertions in the background.
+5. **Presentation:** The platform packages the signed assertions plus the Identity VC into an OID4VP presentation and delivers it to the verifier (e.g. the buyer's conveyancer).
+
+To the verifier, this looks exactly like a standard OpenID presentation from a personal digital wallet — they receive cryptographic proof that the verified person made the assertions. To the user, it feels like a normal web application.
+
+**Future migration to BYOW:** When government or ecosystem wallets (e.g. GOV.UK Wallet, EUDI) become mainstream, users can choose to "Bring Your Own Wallet" (BYOW). They authenticate via OID4VP and sign a finalised document at the end of the process using their own device key. The underlying PDTF architecture and verification logic does not need to change to support this migration.
 
 ---
 
