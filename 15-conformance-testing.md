@@ -3,6 +3,12 @@ title: "15 — Conformance Testing"
 description: "PDTF 2.0 conformance levels, test vectors, and interop protocols."
 ---
 
+# 15 Conformance Testing
+
+**Version:** 0.1 (Draft)
+**Date:** 15 April 2026
+**Author:** Ed Molyneux / Moverly
+
 **Parent:** [00 — Architecture Overview](../00-architecture-overview/)
 
 This specification defines how a software package proves it correctly implements PDTF 2.0. Conformance is established by verifying output against the official test vectors and participating in interop testing.
