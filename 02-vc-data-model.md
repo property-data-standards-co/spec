@@ -1,6 +1,6 @@
 # 02 Verifiable Credentials Data Model
 
-**Version:** 0.4 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 9 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -2173,15 +2173,4 @@ TransactionCredential
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.4 | 9 April 2026 | TransactionCredential gains `saleContext.*` in credentialSubject; TitleCredential gains top-level `ownershipType` and `title` sub-object. Reflects architecture overview Q7.1 (entity schema decomposition of v1 `ownership` object, Option A). §2.2 clarified — credential `id` is required (Q3.3 resolved). |
-| v0.3 | 1 April 2026 | Added §5.6 "Design Constraint: Issuers Are Stateless" — issuers have no visibility of assembled state, pruning is an assembly concern. Frames REPLACE vs MERGE vs hybrid tradeoff for consensus. |
-| v0.2 | 30 March 2026 | Added §6.6 Source Documents — `sourceDocument` schema, `pdtf://` retrieval protocol via DID service discovery, confidentiality tiers, VP-authenticated fetch. |
-| v0.1 | 24 March 2026 | Initial draft. 7 credential types with JSON examples, evidence model (4 types), termsOfUse filtering, BitstringStatusList, DataIntegrityProof (eddsa-jcs-2022), JSON-LD context, migration from verified claims. |
-
----
-
-*This is a living document. As implementation progresses and LMS consensus is reached on D5, this spec will be updated accordingly.*

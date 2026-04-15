@@ -1,6 +1,6 @@
 # 00 Architecture Overview
 
-**Version:** 0.9 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 15 April 2026
 **Author:** Ed Molyneux / Moverly
 
@@ -15,8 +15,6 @@ Where PDTF v1 bound property data to a single platform's verified claims model, 
 PDTF's unique contribution is the **domain layer**: an entity graph that decomposes a property transaction into its constituent parts (Transaction, Property, Title, Person, Organisation, Ownership, Representation, DelegatedConsent, Offer), a schema system that defines what property credentials contain, and composition rules that assemble individual credentials into coherent transaction state.
 
 This document is the master reference for the PDTF 2.0 implementation. It links to sub-specs for each workstream and captures architectural decisions as they're made.
-
-> **v0.9 note:** This version reflects a significant architectural pivot following external review feedback. The custom Trusted Issuer Registry (TIR) and Trust Anchor Organisation (TAO) hierarchy from v0.8 has been replaced with OpenID Federation trust chains and trust marks. The rationale: our bespoke trust infrastructure was reinventing OpenID Federation with different vocabulary. The domain layer (entity graph, schemas, state assembly) is unchanged — the pivot affects only the trust and credential exchange plumbing. See §14 Decisions Log for the full rationale.
 
 ---
 
@@ -364,8 +362,6 @@ Public VCs (title deeds, EPCs, searches) require no authentication.
 ## 6. Trust Architecture
 
 ### 6.1 Federated Trust via OpenID Federation
-
-> **v0.9 pivot:** This section replaces the custom Trusted Issuer Registry (TIR) and Trust Anchor Organisation (TAO) model from v0.8. External review feedback correctly identified that our bespoke trust hierarchy was reinventing OpenID Federation with different vocabulary. VCs don't eliminate trust infrastructure — they still need governance, accreditation, and status checking. OpenID Federation provides all of this as a mature, widely-adopted standard.
 
 PDTF 2.0 uses **OpenID Federation (RFC 9396)** as its trust infrastructure. The federation model establishes who is authorised to issue which property credentials, using a chain of signed entity statements from a trust anchor down to leaf entities.
 
@@ -1031,30 +1027,9 @@ For local development and unit testing, `did:key` eliminates all infrastructure 
 
 ## 14. Decisions Log
 
-All architectural decisions made through v0.3 of this document are baked into the spec text above. The decision log below tracks only the consensus questions identified for industry review, plus the v0.9 pivot decisions.
+All architectural decisions made through v0.3 of this document are baked into the spec text above. The decision log below tracks the consensus questions identified for industry review.
 
-### 14.1 v0.9 Pivot Decisions
-
-| # | Decision | Rationale | Date |
-|---|----------|-----------|------|
-| P1 | **Replace custom TIR/TAO with OpenID Federation trust chain** | External review feedback identified that our bespoke trust hierarchy reinvented OpenID Federation with different vocabulary and weaker guarantees (unsigned JSON vs signed JWTs). OpenID Federation is the standard the UK ecosystem is converging on. | Apr 2026 |
-| P2 | **Adopt OID4VCI for credential issuance** | OID4VCI has landed as a Final Spec. It provides standard credential issuance flows that wallet implementations already support. Our adapters become standard credential issuers. | Apr 2026 |
-| P3 | **Adopt OID4VP for credential presentation** | OID4VP has landed as a Final Spec. Participation proofs, access control, and credential exchange all use the same standard presentation protocol. | Apr 2026 |
-| P4 | **Adopt FAPI 2.0 as API security profile** | Property transactions carry sensitive personal and financial data. FAPI 2.0 provides the same security guarantees required in open banking — sender-constrained tokens, PAR, JARM. | Apr 2026 |
-| P5 | **Property trust marks replace TIR accreditation entries** | Trust marks are the OpenID Federation mechanism for asserting entity capabilities. PDTF defines property-specific trust marks (title-data-provider, search-provider, regulated-conveyancer, etc.) with entity:path authorisation as a domain extension. | Apr 2026 |
-| P6 | **DIDs remain as identifiers, not trust roots** | DIDs are useful for cryptographic binding (persons, organisations, transactions) but trust is established via federation, not DID resolution alone. The "verify the signature, not the intermediary" framing from v0.8 was overstated for proxy-issued credentials. | Apr 2026 |
-| P7 | **GitHub TIR becomes bootstrap implementation** | The TIR JSON format maps directly to federation entity statements and trust marks. During Phase 1, federation metadata is generated from the TIR, providing a migration path without a hard cutover. | Apr 2026 |
-
-### 14.2 Superseded Decisions
-
-| # | Original Decision | Superseded By | Note |
-|---|-------------------|---------------|------|
-| (v0.8 §6.1) | Custom TIR as canonical trust mechanism | P1 | TIR survives as bootstrap; OpenID Federation is canonical |
-| (v0.8 §6.2) | TIR entity:path authorisation as primary trust model | P5 | entity:path concept preserved as trust mark claim extension |
-| (v0.8 §6.3) | User account providers in TIR | P5 | Account providers hold `account-provider` trust mark instead |
-| (v0.8 §6.5 Phase 3) | "Hybrid: VC-based accreditations resolved via HTTP" | P1 | OpenID Federation already provides this — no need for bespoke hybrid |
-
-### 14.3 Resolved consensus decisions
+### 14.1 Resolved consensus decisions
 
 | # | Question | Decision | Date |
 |---|----------|----------|------|
@@ -1067,14 +1042,14 @@ All architectural decisions made through v0.3 of this document are baked into th
 | Q5.2 | Multiple issuers per path | Permitted and expected. Multiple commercial search providers, valuation services, and similar will legitimately issue credentials against the same entity:path combinations. Trust marks do not enforce exclusivity. | Apr 2026 |
 | Q6.1–Q6.3 | Migration strategy | Migration proceeds by running PDTF v1 and v2 operations in parallel. New transactions start on v2; in-flight transactions continue on v1 until they close. When all active transactions support v2 output, v1 is retired. State assembly supports both formats throughout the overlap. | Apr 2026 |
 
-### 14.4 Open consensus questions
+### 14.2 Open consensus questions
 
 | # | Question | Spec Ref | Decision | Date |
 |---|----------|----------|----------|------|
 | Q1.1 | Claims merge strategy: REPLACE vs MERGE vs hybrid. | 02 §5, 07 §4 | Issuer-driven credential granularity cannot be mandated (see Q1.2 resolution), which weakens the REPLACE case: REPLACE requires issuers to understand path boundaries precisely. MERGE with schema-driven pruning is simpler for issuers but requires the assembler to understand dependencies. Tradeoff still open for industry consensus. | |
 | Q2.1 | Multi-property transactions: how do overlays, form mappings, and v3 `propertyPack` (singular) handle multiple properties? | 01 §9.1, 07 §12.1 | | |
 
-### 14.4.1 Theme 7: Entity Model Boundaries
+### 14.2.1 Theme 7: Entity Model Boundaries
 
 Decomposing the v1 monolithic property pack schema into entity-scoped schemas raises design questions that weren't captured in the original themes. The Entity Graph (sub-spec 01) defines the entities and their relationships, but the exact field-level seams between them require validation. This theme collects those decisions.
 
@@ -1106,20 +1081,4 @@ Reordered to reflect the OpenID ecosystem alignment:
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.9 | 15 April 2026 | **Major pivot: OpenID ecosystem alignment.** PDTF repositioned as property-specific domain profile within OpenID Federation ecosystem rather than standalone DID-first trust architecture. §1 Executive Summary rewritten. §2 comparison table updated. §4 reframed for OID4VCI/OID4VP; §4.2 simplified; §4.5 added (credential exchange protocols). §5 discovery model updated for federation + DID resolution. **§6 Trust Architecture rewritten:** custom TIR/TAO replaced with OpenID Federation trust chain + property trust marks; entity:path authorisation preserved as trust mark claim extension; three-phase evolution updated. §7 key management aligned with federation key handling; key rotation follows federation semantics. §9 adapters reframed as OID4VCI issuers and federation leaf entities. §10 federation client added to reference implementations. §11 NPTN updated for OID4VP. **§12 API Design:** FAPI 2.0 as security profile; authentication via OID4VP. §13 sub-spec 04 renamed to Property Trust Profile. §14 pivot decisions (P1–P7) and superseded decisions added. §15 implementation priority reordered. Catalyst: external review feedback on trust architecture. Entity graph, schemas, state assembly, provenance model preserved unchanged. |
-| v0.8 | 14 April 2026 | §4.4 Proof Format Comparison added — Data Integrity vs JWS/VC-JWT rationale. §6.4 Trust Infrastructure Comparison added — TIR vs OpenID Federation vs EBSI Root-TAO/TAO with Phase 3 evolution path. Previous §6.4 renumbered to §6.5. |
-| v0.7 | 9 April 2026 | §14 Decisions Log restructured. Consensus questions resolved and moved to §14.1. Theme 7 Entity Model Boundaries added. |
-| v0.6 | 2 April 2026 | §12.5 Environment Separation added — three-tier model (local dev/staging/prod), domain conventions, cross-contamination protection. Q5.3 resolved. |
-| v0.5 | 1 April 2026 | Encryption deferred to Phase 2+ (§12.3 Phase 1 note). Organisation `did:key` support formalised alongside `did:web`. Status list signing aligned to issuer key. Merge semantics (Q1.1) reframed: issuers are stateless, pruning is an assembly concern. Q1.2 updated to connect credential granularity to merge strategy. |
-| v0.4 | 29 March 2026 | Person/Organisation symmetry — all relationship credentials support both. Ownership reframed as self-asserted right to sell. Decision log restructured: D1–D32 baked into spec text, log now tracks only 17 consensus questions (Q1.1–Q6.3). Entity relationship diagram rebuilt with Organisation as first-class entity. |
-| v0.3 | 29 March 2026 | §12 API Design expanded: MCP + OpenAPI dual binding, agent DID authentication, VC envelope encryption model (ECDH-ES+A256KW), platform sync architecture. Decisions D29–D32 added. Organisation `did:key` option introduced (D7/D26 updated). PDF table formatting improved. |
-| v0.2 | 24 March 2026 | Organisation added as first-class entity. Representation targets Organisations not Persons. Logbook test (§3.4) for field assignment. Ownership as thin credential with claim-vs-evidence separation. Decisions D26–D28 added, D3 resolved. Sub-spec 01 marked DRAFTED. |
-| v0.1 | 23 March 2026 | Initial draft. Entity graph, trust evolution (3-phase), TIR concept, 25 architectural decisions (D1–D25). |
-
----
-
-*This is a living document. As sub-specs are written and decisions are made, this overview will be updated to reflect the current state.*

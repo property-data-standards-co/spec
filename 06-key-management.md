@@ -1,6 +1,6 @@
 # 06 Key Management
 
-**Version:** 0.2 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -1545,13 +1545,4 @@ At scale (10,000 users): ~$600/month for user keys + operations. Still modest co
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.2 | 1 April 2026 | Status list signing aligned to issuer key — separate `status-list-signing-key` removed. §3.4 rewritten, §3.5 summary table updated, §4.2 project structure simplified, §4.5 IAM consolidated, §7.4 rotation schedule updated. Q5 resolved. Encryption keys (X25519) deferred to Sub-spec 12 (Phase 2+). Cost estimate reduced ~$78/month. |
-| v0.1 | 24 March 2026 | Initial draft. Ed25519 + eddsa-jcs-2022, 4 key categories, GCP KMS architecture (3 projects), signing flow, did:key derivation, key rotation, wallet binding phases (4-phase), compromise response, cost model. |
-
----
-
-*This document is part of the PDTF 2.0 specification suite. For the complete list of sub-specs, see [00 — Architecture Overview](./00-architecture-overview.md).*

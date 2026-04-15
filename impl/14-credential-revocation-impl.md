@@ -1567,7 +1567,7 @@ async function onTransactionCompleted(transactionDid: string): Promise<void> {
 
   // 1. Find all credentials to revoke for this transaction
   const toRevoke = await findTransactionCredentials(transactionDid, [
-    'OwnershipCredential',       // Seller's ownership → revoke (title transferred)
+    'SellerCapacityCredential',       // Seller's ownership → revoke (title transferred)
     'RepresentationCredential',  // All representations → revoke (transaction over)
     'DelegatedConsentCredential', // All consents → revoke (no longer needed)
   ]);
@@ -1586,7 +1586,7 @@ async function onTransactionCompleted(transactionDid: string): Promise<void> {
     `already revoked ${result.alreadyRevoked.length}`,
   );
 
-  // 3. Issue new OwnershipCredential to buyer
+  // 3. Issue new SellerCapacityCredential to buyer
   // (handled by credential service, not revocation)
 }
 

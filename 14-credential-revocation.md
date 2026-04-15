@@ -1,6 +1,6 @@
 # 14 Credential Revocation
 
-**Version:** 0.2 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -1280,9 +1280,4 @@ PDTF v1/v3 does not have credential revocation (claims are asserted through OIDC
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.2 | 1 April 2026 | Status list signing explicitly requires same key as credential issuance — §4 requirements strengthened, §13 security updated, Q6 resolved. |
-| v0.1 | 24 March 2026 | Initial draft. W3C Bitstring Status List v1.0, 16KB minimum lists, revocation + suspension purposes, fail-closed policy, 5-min cache TTL, CDN hosting, batch revocation, index allocation, reference packages. |

@@ -1,6 +1,6 @@
 # 01 Entity Graph & Schema
 
-**Version:** 0.4 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 9 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft for review (LMS collaboration)
@@ -696,15 +696,4 @@ The following are *value lists*, not entity collections. They remain as arrays:
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.4 | 9 April 2026 | Transaction entity gains `saleContext.*` fields; Title entity gains top-level `ownershipType` and `title` sub-object. Decomposition of the v1 monolithic `ownership` schema object per architecture overview Q7.1 (Option A). Unregistered title identifier format remains open (Q7.2). |
-| v0.3 | 1 April 2026 | Organisation supports `did:key` (provider-managed) or `did:web` (self-hosted). Identity note added to Organisation entity section. Identifier system table updated. |
-| v0.2 | 24 March 2026 | Author attribution corrected. SellerCapacity field assignment via logbook test incorporated. |
-| v0.1 | 24 March 2026 | Initial draft. 9 core entities, field mapping from v3 combined.json, identifier system (DIDs + URNs), collection conversion rules, transformation pipeline. |
-
----
-
-*This is a living document. Decisions made here are logged as D26–D30 in the [Architecture Overview](./00-architecture-overview.md).*

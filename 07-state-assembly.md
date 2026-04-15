@@ -1,6 +1,6 @@
 # 07 State Assembly
 
-**Version:** 0.2 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -2105,13 +2105,4 @@ A non-exhaustive list of discriminator patterns in the PDTF schema that the prun
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.2 | 1 April 2026 | Added §6.10 "Assembler Pruning Obligation" — assembler MUST apply schema dependency rules if MERGE semantics adopted. Issuers are stateless; pruning is assembly-time only. Schema `if/then/else` and `oneOf` discriminators define rules. |
-| v0.1 | 24 March 2026 | Initial draft. composeV4StateFromGraph and composeV3StateFromGraph algorithms, dependency pruning, conflict resolution, v3 backward compatibility, dual state assembly, trust-level-aware composition. |
-
----
-
-*This is a living document. Decisions made here relate to D5, D10, and D15 in the [Architecture Overview](./00-architecture-overview.md). As the implementation progresses, this spec will be updated to reflect actual code and any design changes.*

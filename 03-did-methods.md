@@ -1,6 +1,6 @@
 # 03 DID Methods & Identifiers
 
-**Version:** 0.2 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -1184,13 +1184,4 @@ This generates the key pair, constructs the DID document with regulatory metadat
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.2 | 1 April 2026 | Organisation `did:key` support added throughout: DID document examples, key decisions (D7/D26), entity mapping, creation lifecycle, cache TTLs, key storage. Provider-managed `did:key` as default path. `managedOrganisations` verification via TIR. |
-| v0.1 | 24 March 2026 | Initial draft. `did:key` for Persons, `did:web` for Organisations/Transactions/Adapters, URN scheme (7 types), DID document patterns, cache strategy, key rotation, deactivation, TIR cross-check. |
-
----
-
-*End of Sub-spec 03.*

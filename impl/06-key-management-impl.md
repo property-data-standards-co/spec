@@ -1,6 +1,6 @@
 # PDTF 2.0 — Implementation: Key Management Service
 
-**Version:** 0.3 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -2584,14 +2584,4 @@ At 100K users, the cost is meaningful but still modest relative to revenue. The 
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.3 | 1 April 2026 | Separate status list signing key removed from Terraform/IAM/cost model. Status lists use issuer's own key. |
-| v0.2 | 31 March 2026 | Dual KeyProvider pattern: FirestoreKeyProvider (dev/staging, @noble/ed25519, zero KMS cost) + KmsKeyProvider (production). Factory with production safety guard. Config: `keyProvider: "firestore" | "kms"`. VcSigner, UserKeyProvisioner updated. Staging cost reduced to ~$1.60/month. |
-| v0.1 | 24 March 2026 | Initial draft. GCP KMS implementation, Terraform modules, @pdtf/key-manager package, VcSigner, VcVerifier, UserKeyProvisioner, Firestore schema, DID document serving, operational runbooks, cost model (~$87/month). |
-
----
-
-*This document is part of the PDTF 2.0 implementation specification suite. For the protocol-level spec, see [Sub-spec 06 — Key Management](../06-key-management.md).*

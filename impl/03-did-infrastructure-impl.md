@@ -933,7 +933,7 @@ const URN_PATTERNS: Record<string, RegExp> = {
   uprn: /^urn:pdtf:uprn:\d{1,12}$/,
   titleNumber: /^urn:pdtf:titleNumber:[A-Za-z]{1,4}\d{1,8}$/,
   unregisteredTitle: /^urn:pdtf:unregisteredTitle:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-  ownership: /^urn:pdtf:ownership:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  ownership: /^urn:pdtf:capacity:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
   representation: /^urn:pdtf:representation:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
   consent: /^urn:pdtf:consent:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
   offer: /^urn:pdtf:offer:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -1206,12 +1206,12 @@ resource "google_monitoring_alert_policy" "org_did_verification_failure" {
       "urn:pdtf:titleNumber:DN123456",
       "urn:pdtf:titleNumber:AGL12345",
       "urn:pdtf:unregisteredTitle:f47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "urn:pdtf:ownership:7c9e6679-7425-40de-944b-e07fc1f90ae7"
+      "urn:pdtf:capacity:7c9e6679-7425-40de-944b-e07fc1f90ae7"
     ],
     "invalid": [
       "urn:pdtf:uprn:1234567890123",
       "urn:pdtf:titleNumber:123456",
-      "urn:pdtf:ownership:not-a-uuid",
+      "urn:pdtf:capacity:not-a-uuid",
       "urn:other:uprn:123",
       ""
     ]

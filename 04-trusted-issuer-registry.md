@@ -1,6 +1,6 @@
 # 04 Trusted Issuer Registry
 
-**Version:** 0.3 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 9 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -1447,14 +1447,4 @@ Common entity:path combinations referenced across PDTF 2.0 sub-specs:
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.3 | 9 April 2026 | Clarified that multiple issuers per path are permitted (Q5.2 resolved in architecture overview §14.1). TIR does not enforce exclusivity. |
-| v0.2 | 1 April 2026 | `managedOrganisations` field added to `accountProvider` entries — URL to signed JSON listing verified Organisation `did:key` identifiers. JSON Schema updated. Initial registry entry for Moverly updated. |
-| v0.1 | 24 March 2026 | Initial draft. GitHub-hosted registry, entity:path authorisation, trust levels (rootIssuer/trustedProxy/accountProvider), status lifecycle, caching, CI validation, governance model, initial registry entries. |
-
----
-
-*This document is part of the PDTF 2.0 specification suite. See [00 — Architecture Overview](./00-architecture-overview.md) for the full sub-spec index.*

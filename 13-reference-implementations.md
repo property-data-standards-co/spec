@@ -1,6 +1,6 @@
-# PDTF 2.0 — Sub-spec 13: Reference Implementations
+# 13 Reference Implementations
 
-**Version:** 0.2 (Draft)
+**Version:** 0.1 (Draft)
 **Date:** 1 April 2026
 **Author:** Ed Molyneux / Moverly
 **Status:** Draft
@@ -896,13 +896,4 @@ Anticipated but out of scope for initial release:
 
 ---
 
-## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| v0.2 | 1 April 2026 | Organisation `did:key` verification added to §3.1 Stage 4 — validator MUST check TIR `managedOrganisations` registries. `ORG_DID_KEY_NOT_IN_MANAGED_ORGS` error code added to §3.3 taxonomy. |
-| v0.1 | 24 March 2026 | Initial draft. @pdtf/vc-validator (4-stage pipeline), @pdtf/vc-signer, @pdtf/did-resolver, @pdtf/graph-composer, @pdtf/tir-client packages. Error taxonomy, test vectors, integration patterns. |
-
----
-
-*This specification is part of the PDTF 2.0 suite. For the full architecture, see [00 — Architecture Overview](./00-architecture-overview.md).*
