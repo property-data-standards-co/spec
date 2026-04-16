@@ -273,7 +273,7 @@ Organisations (conveyancer firms, estate agencies) host their own DID documents 
 │  Firm uses    │     │  Firm hosts   │     │  Moverly     │
 │  @pdtf/       │────▶│  did.json at  │────▶│  verifies +  │
 │  did-tools    │     │  their domain │     │  registers   │
-│  CLI          │     │               │     │  in TIR      │
+│  CLI          │     │               │     │  Trust Mark  │
 └──────────────┘     └──────────────┘     └──────────────┘
 ```
 
@@ -573,7 +573,7 @@ firestore/
 │       ├── lastVerifiedAt: timestamp      # When we last checked did.json
 │       ├── lastVerifiedKeyMultibase: string  # Key hash for change detection
 │       ├── verificationStatus: string     # "verified" | "pending" | "failed"
-│       ├── tirEntryId: string | null      # Reference to TIR entry
+│       ├── trustMarkId: string | null     # Reference to federation Trust Mark
 │       ├── registeredAt: timestamp
 │       └── deactivatedAt: timestamp | null
 ```
@@ -625,7 +625,7 @@ export const verifyOrgDids = onSchedule(
         const currentKey = result.keyType; // simplified — should hash all keys
         if (data.lastVerifiedKeyMultibase && currentKey !== data.lastVerifiedKeyMultibase) {
           console.warn(`Key change detected for ${data.did}`);
-          // TODO: Alert — key changed, may need TIR update
+          // TODO: Alert — key changed, may need federation Trust Mark re-issuance
         }
       }
 

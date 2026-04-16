@@ -12,7 +12,7 @@ The Property Data Trust Framework version 2.0 — W3C Verifiable Credentials, de
 | 01 | [Entity Graph](01-entity-graph.md) | v0.3 | V4 schema decomposition, entity relationships, ID-keyed collections |
 | 02 | [VC Data Model](02-vc-data-model.md) | v0.3 | W3C VC mapping, evidence model, claims representation |
 | 03 | [DID Methods](03-did-methods.md) | v0.2 | did:key, did:web, URN schemes, DID document structure |
-| 04 | [Trusted Issuer Registry](04-trusted-issuer-registry.md) | v0.2 | GitHub-based TIR, entry schema, validation, caching |
+| 04 | [OpenID Federation](04-openid-federation.md) | v0.1 | Trust Anchor, Entity Statements, Trust Marks, entity:path delegation |
 | 06 | [Key Management](06-key-management.md) | v0.2 | Key hierarchy, rotation, wallet binding |
 | 07 | [State Assembly](07-state-assembly.md) | v0.2 | Graph-to-state composition, dependency pruning, migration |
 | 13 | [Reference Implementations](13-reference-implementations.md) | v0.2 | VC validator, graph composer, DID resolver specs |
@@ -23,7 +23,6 @@ The Property Data Trust Framework version 2.0 — W3C Verifiable Credentials, de
 | # | Document | Version | Description |
 |---|----------|---------|-------------|
 | 03 | [DID Infrastructure](impl/03-did-infrastructure-impl.md) | v0.1 | did:web hosting, DID document lifecycle |
-| 04 | [TIR Implementation](impl/04-tir-impl.md) | v0.1 | Registry repo structure, CI validation |
 | 06 | [Key Management](impl/06-key-management-impl.md) | v0.3 | Firestore/KMS providers, key rotation ops |
 | 14 | [Credential Revocation](impl/14-credential-revocation-impl.md) | v0.1 | Status list hosting, publish pipeline |
 
@@ -42,8 +41,8 @@ The Property Data Trust Framework version 2.0 — W3C Verifiable Credentials, de
 
 | Repo | Description |
 |------|-------------|
-| [core](https://github.com/property-data-standards-co/core) | `@pdtf/core` — signing, verification, DIDs, status lists, TIR client |
-| [tir](https://github.com/property-data-standards-co/tir) | Trusted Issuer Registry — live registry data |
+| [core](https://github.com/property-data-standards-co/core) | `@pdtf/core` — signing, verification, DIDs, status lists, federation client |
+| [trust-anchor](https://github.com/property-data-standards-co/trust-anchor) | PDTF Trust Anchor — federation endpoints and trust mark issuance |
 | [webv2](https://github.com/property-data-standards-co/webv2) | PDTF 2.0 website |
 | [schemas](https://github.com/property-data-standards-co/schemas) | PDTF JSON Schemas (`@pdtf/schemas`) |
 

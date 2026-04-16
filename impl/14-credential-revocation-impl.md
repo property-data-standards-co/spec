@@ -29,7 +29,7 @@ This document specifies the technical implementation of credential revocation in
 - Protocol-level Bitstring Status List semantics (see Sub-spec 14)
 - Key management (see impl/06-key-management-impl.md)
 - VC signing format (see Sub-spec 02)
-- TIR integration (see Sub-spec 04)
+- OpenID Federation integration (see Sub-spec 04)
 
 ---
 
@@ -1150,7 +1150,7 @@ export class StatusChecker {
 
     // 3. Verify status list VC signature
     const verifyResult = await this.verifier.verify(statusListVc, {
-      skipTirCheck: true,
+      skipFederationCheck: true,
       skipRevocationCheck: true, // Don't recursively check status of the status list!
     });
 

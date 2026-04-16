@@ -29,7 +29,7 @@ This document specifies the technical implementation of key management for Mover
 **What this does NOT cover:**
 
 - VC credential format or signing semantics (see 02-vc-data-model)
-- TIR structure or registration (see 04-trusted-issuer-registry)
+- OpenID Federation structure or Trust Mark issuance (see 04-openid-federation)
 - Revocation / status list infrastructure (see 14-credential-revocation)
 - Transport security (TLS), Firebase Auth, or API authentication
 
@@ -192,7 +192,7 @@ resource "google_kms_key_ring_iam_member" "user_key_signer" {
   member      = "serviceAccount:credential-service@pdtf-users-${var.environment}.iam.gserviceaccount.com"
 }
 
-# Platform service: signs TIR and platform attestations
+# Platform service: signs federation Entity Statements, Trust Marks, and platform attestations
 resource "google_kms_crypto_key_iam_member" "platform_signer" {
   crypto_key_id = google_kms_crypto_key.platform_signing.id
   role          = "roles/cloudkms.signerVerifier"
@@ -448,7 +448,7 @@ export interface VerificationResult {
   valid: boolean;
   checks: {
     signatureValid: boolean;
-    issuerTrusted: boolean | null;  // null = TIR check skipped
+    issuerTrusted: boolean | null;  // null = federation trust resolution skipped
     notRevoked: boolean | null;     // null = revocation check skipped
     proofPurposeValid: boolean;
   };
@@ -1263,14 +1263,14 @@ export class VcVerifier {
    * or in a browser.
    *
    * @param signedVc VC with proof
-   * @param options Optional: skip TIR or revocation checks
+   * @param options Optional: skip federation or revocation checks
    */
   async verify(
     signedVc: Record<string, unknown>,
     options?: {
-      skipTirCheck?: boolean;
+      skipFederationCheck?: boolean;
       skipRevocationCheck?: boolean;
-      tirChecker?: (issuer: string, types: string[]) => Promise<boolean>;
+      federationChecker?: (issuer: string, types: string[]) => Promise<boolean>;
       revocationChecker?: (status: Record<string, unknown>) => Promise<boolean>;
     },
   ): Promise<VerificationResult> {
@@ -1360,12 +1360,12 @@ export class VcVerifier {
       };
     }
 
-    // 5. TIR check (optional)
+    // 5. Federation trust resolution (optional)
     let issuerTrusted: boolean | null = null;
-    if (!options?.skipTirCheck && options?.tirChecker) {
+    if (!options?.skipFederationCheck && options?.federationChecker) {
       const issuer = signedVc.issuer as string;
       const types = signedVc.type as string[];
-      issuerTrusted = await options.tirChecker(issuer, types);
+      issuerTrusted = await options.federationChecker(issuer, types);
     }
 
     // 6. Revocation check (optional)
@@ -2065,8 +2065,8 @@ export const verifyCredential = onRequest(
     }
 
     const result = await verifier.verify(vc, {
-      tirChecker: async (issuer, types) => {
-        // TODO: integrate with TIR service
+      federationChecker: async (issuer, types) => {
+        // TODO: integrate with federation Trust Anchor service
         return true;
       },
       revocationChecker: async (status) => {
@@ -2126,7 +2126,7 @@ echo "Store metadata: keyPath=${KEY_PATH}, did=${DID}, adapterId=${ADAPTER_ID}"
 # 5. Deploy DID document
 echo "Deploy DID document to https://${DOMAIN_PATH//://}/did.json"
 
-# 6. Register in TIR
+# 6. Issue Trust Mark via federation Trust Anchor
 echo "Register adapter DID in Trusted Issuer Registry"
 
 echo "=== Done ==="
@@ -2258,7 +2258,7 @@ echo "(Run: node scripts/assess-compromise-scope.js --adapter=${ADAPTER_ID} --ve
 echo "[5/5] Notification required:"
 echo "  - Security team: Slack #security-incidents"
 echo "  - Affected users: email via credential-service"
-echo "  - Relying parties: TIR update notification"
+echo "  - Relying parties: federation metadata update notification"
 
 echo ""
 echo "=== Immediate actions complete ==="
@@ -2351,7 +2351,7 @@ describe('KMS round-trip (emulator)', () => {
 
     // 3. Verify locally (no KMS needed)
     const verifier = new VcVerifier();
-    const result = await verifier.verify(signed, { skipTirCheck: true });
+    const result = await verifier.verify(signed, { skipFederationCheck: true });
 
     expect(result.valid).toBe(true);
     expect(result.checks.signatureValid).toBe(true);
