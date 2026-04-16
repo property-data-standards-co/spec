@@ -627,9 +627,9 @@ function reconstructParticipants(v4State: ComposedStateV4): Participant[] {
     participants.push({
       ...person,
       role: "Seller",
-      participantStatus: mapOwnershipStatus(ownership.status),
+      participantStatus: mapSellerCapacityStatus(ownership.status),
       // Preserve the ownership credential ID for round-trip
-      _ownershipId: ownId
+      _sellerCapacityId: ownId
     });
   }
 
@@ -1414,11 +1414,11 @@ function decomposeParticipants(
       result.persons[personDid] = extractPersonFields(p);
 
       if (p.role === 'Seller') {
-        const ownUrn = generateOwnershipUrn();
+        const ownUrn = generateSellerCapacityUrn();
         result.ownership[ownUrn] = {
           personId: personDid,
           titleId: resolveSellerTitle(p),
-          status: mapOwnershipStatus(p.participantStatus)
+          status: mapSellerCapacityStatus(p.participantStatus)
         };
       }
       // Buyers: handled via offers (offerId on participant)

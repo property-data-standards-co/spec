@@ -622,7 +622,7 @@ test/vectors/
 ├── valid/
 │   ├── property-epc-credential.json
 │   ├── title-register-credential.json
-│   ├── ownership-credential.json
+│   ├── seller-capacity-credential.json
 │   └── multi-entity-graph.json
 ├── invalid/
 │   ├── expired-credential.json

@@ -215,7 +215,7 @@ pdtf-urn          = "urn:pdtf:" pdtf-nss
 pdtf-nss          = property-urn
                   / title-urn
                   / unregistered-title-urn
-                  / ownership-urn
+                  / capacity-urn
                   / representation-urn
                   / consent-urn
                   / offer-urn
@@ -233,7 +233,7 @@ district-prefix   = 1*4ALPHA
 unregistered-title-urn = "unregisteredTitle:" uuid-v4
 
 ; SellerCapacity — UUID v4
-ownership-urn     = "ownership:" uuid-v4
+capacity-urn     = "capacity:" uuid-v4
 
 ; Representation — UUID v4
 representation-urn = "representation:" uuid-v4

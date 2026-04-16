@@ -12,7 +12,7 @@ PDTF 2.0 is the property-specific domain profile for the emerging UK digital ide
 
 Where PDTF v1 bound property data to a single platform's verified claims model, PDTF 2.0 makes property data portable, independently verifiable, and interoperable — by adopting the same standards that UK Smart Data, GOV.UK Wallet, and the EU Digital Identity Architecture are converging on: **OpenID Federation** for trust, **OID4VCI** for credential issuance, **OID4VP** for credential presentation, and **FAPI 2.0** for high-assurance API security.
 
-PDTF's unique contribution is the **domain layer**: an entity graph that decomposes a property transaction into its constituent parts (Transaction, Property, Title, Person, Organisation, Ownership, Representation, DelegatedConsent, Offer), a schema system that defines what property credentials contain, and composition rules that assemble individual credentials into coherent transaction state.
+PDTF's unique contribution is the **domain layer**: an entity graph that decomposes a property transaction into its constituent parts (Transaction, Property, Title, Person, Organisation, SellerCapacity, Representation, DelegatedConsent, Offer), a schema system that defines what property credentials contain, and composition rules that assemble individual credentials into coherent transaction state.
 
 This document is the master reference for the PDTF 2.0 implementation. It links to sub-specs for each workstream and captures architectural decisions as they're made.
 
@@ -22,7 +22,7 @@ This document is the master reference for the PDTF 2.0 implementation. It links 
 
 | Aspect | PDTF v1 (Current) | PDTF 2.0 |
 |--------|-------------------|-----------|
-| **Data model** | Monolithic `pdtf-transaction.json` (~4,000 paths) | Entity graph: Transaction, Property, Title, Person, Organisation, Ownership, Representation, DelegatedConsent, Offer |
+| **Data model** | Monolithic `pdtf-transaction.json` (~4,000 paths) | Entity graph: Transaction, Property, Title, Person, Organisation, SellerCapacity, Representation, DelegatedConsent, Offer |
 | **Claims** | OpenID Connect verified claims with pathKey:value REPLACE semantics | W3C Verifiable Credentials with sparse objects, issued via OID4VCI |
 | **Identity** | Firebase Auth UIDs, no universal identifiers | DIDs (`did:key` for persons, `did:web` for organisations) within a governed OpenID Federation |
 | **Entity identifiers** | Internal Firestore document IDs | URNs: `urn:pdtf:titleNumber:{value}`, `urn:pdtf:uprn:{value}` |
@@ -47,9 +47,9 @@ The key shift is not "OIDC → DIDs" but **"platform-bound claims → portable c
 | **Transaction** | `did:web` | `v4/Transaction.json` | Metadata, status, dates, financial info. References Property and Titles. DID document hosts service endpoints. |
 | **Property** | `urn:pdtf:uprn:{uprn}` | `v4/Property.json` | Physical property: address, build info, features, energy, environmental, legal questions. All "property pack" data lives here. |
 | **Title** | `urn:pdtf:titleNumber:{number}` | `v4/Title.json` | Legal ownership: title number, extents (geoJSON), register extract, ownership type (freehold/leasehold), leasehold info. |
-| **Person** | `did:key` | `v4/Person.json` | Individual: name, contact, address, verification status. Role-free — role is contextual via Ownership, Representation, or Offer. |
+| **Person** | `did:key` | `v4/Person.json` | Individual: name, contact, address, verification status. Role-free — role is contextual via SellerCapacity, Representation, or Offer. |
 | **Organisation** | `did:key` or `did:web` | `v4/Organisation.json` | Firm or company: conveyancer firm, estate agency, lender. Uses `did:key` when managed by an account provider (e.g. LMS) or `did:web` when self-hosting identity. |
-| **Ownership** | URN (generated) | `v4/Ownership.json` | Self-asserted claim of legal ownership linking a Person/Organisation DID to a Title URN. Starts as the owner's own assertion; verified against Title.registerExtract.proprietorship (claim-vs-evidence separation). The ownership claim establishes the right to sell. Revocable. |
+| **SellerCapacity** | URN (generated) | `v4/SellerCapacity.json` | Self-asserted claim of legal ownership linking a Person/Organisation DID to a Title URN. Starts as the owner's own assertion; verified against Title.registerExtract.proprietorship (claim-vs-evidence separation). The ownership claim establishes the right to sell. Revocable. |
 | **Representation** | URN (generated) | `v4/Representation.json` | Delegated authority to act on behalf of a seller or buyer. Typically issued to an Organisation (the firm), but supports Person holders too. Revocable. |
 | **DelegatedConsent** | URN (generated) | `v4/DelegatedConsent.json` | Authorised data access for entities like lenders. Part of terms of use for specific authorised entities (Q4.2 resolved via DelegatedConsentCredential). |
 | **Offer** | URN (generated) | `v4/Offer.json` (TBD) | Links buyer Person(s) or Organisation(s) to Transaction. Buyers participate only through Offers. Contains offer details, status, conditions. |
@@ -78,13 +78,13 @@ Transaction (did:web:moverly.com:transactions:*)
     ├── Organisation[] (did:key:* or did:web:*)
     │     └── Firms and companies
     │
-    ├── Ownership[] ──→ Person/Organisation ──→ Title
+    ├── SellerCapacity[] ──→ Person/Organisation ──→ Title
     │     └── Self-asserted claim of legal ownership, linking
     │         a Person/Organisation DID to a Title URN.
     │         Verified against Title.registerExtract.proprietorship.
     │         The ownership claim is what gives the holder the
     │         right to sell — the Transaction's Titles are "for sale"
-    │         because someone with an Ownership credential says so.
+    │         because someone with an SellerCapacity credential says so.
     │
     ├── Representation[] ──→ Person/Organisation
     │     ├── role: "sellerConveyancer" (issued by seller/owner)
@@ -104,7 +104,7 @@ Transaction (did:web:moverly.com:transactions:*)
 ```
 
 **Participation decomposed:** The old "Participation" entity is replaced by three precise relationship types:
-- **Ownership** — self-asserted claim of legal ownership, linking a Person or Organisation DID to a Title URN. The owner starts by asserting their own ownership; the platform then seeks to verify this against Title.registerExtract.proprietorship (claim-vs-evidence separation). The ownership claim is what establishes the right to sell: a Transaction's referenced Titles are "for sale" because the legal owner — who holds the Ownership credential — is offering them for sale.
+- **SellerCapacity** — self-asserted claim of legal ownership, linking a Person or Organisation DID to a Title URN. The owner starts by asserting their own ownership; the platform then seeks to verify this against Title.registerExtract.proprietorship (claim-vs-evidence separation). The ownership claim is what establishes the right to sell: a Transaction's referenced Titles are "for sale" because the legal owner — who holds the SellerCapacity credential — is offering them for sale.
 - **Representation** — delegated authority to act on someone's behalf. Typically issued to an Organisation (the conveyancer firm, not the individual solicitor), because the professional duty and insurance liability sits with the firm. But the credential model supports both Person and Organisation holders — companies can also represent other companies.
 - **DelegatedConsent** — authorised access for entities like lenders, as part of terms of use (Q4.2 resolved via DelegatedConsentCredential). General consent mechanism for entities that aren't direct participants but have legitimate data access needs.
 
@@ -113,7 +113,7 @@ Transaction (did:web:moverly.com:transactions:*)
 ### 3.3 Key Design Decisions
 
 - **Buyers participate only through Offers** — no Participation entity for buyers. This models the real-world relationship: a buyer doesn't "participate" in the seller's transaction until they make an offer, and multiple offers can exist simultaneously. Buyers can be Persons or Organisations (companies buy property too).
-- **Ownership establishes the right to sell** — the legal owner self-asserts ownership by issuing an Ownership credential linking their DID to a Title URN. This is what puts a title "for sale" in a transaction. The platform then verifies the claim against the proprietorship register. No separate "listing" entity is needed — the Ownership credential IS the assertion of the right to dispose of the title.
+- **SellerCapacity establishes the right to sell** — the legal owner self-asserts ownership by issuing an SellerCapacity credential linking their DID to a Title URN. This is what puts a title "for sale" in a transaction. The platform then verifies the claim against the proprietorship register. No separate "listing" entity is needed — the SellerCapacity credential IS the assertion of the right to dispose of the title.
 - **ID-keyed collections** — v4 moves from arrays (participants[], searches[]) to ID-keyed maps (like current offers). Breaking change to schema structure but not to the underlying data — path handling code updates required.
 - **Property-level VCs** — EPC, flood risk, searches etc. are Property VCs with paths like `/energyEfficiency/certificate`, not first-class entity VCs. Primary issuers will use the same paths when they adopt the standard.
 
@@ -124,7 +124,7 @@ The governing question for field assignment: **"Does this fact travel with the p
 - **Property** = enduring facts (the "logbook"): EPC, flood risk, build info, legal questions, fixtures & fittings, environmental data. If a new buyer inherits it, it's a Property fact.
 - **Title** = legal title facts: title number, extents (geoJSON), register extract (including proprietorship as evidence), ownership type (freehold/leasehold), leasehold terms and restrictions, isFirstRegistration, mortgage/charge information. The existing branch 263 work already merges `ownershipsToBeTransferred` into the Title entity.
 - **Transaction** = this-sale facts: numberOfSellers, numberOfNonUkResidentSellers, outstandingMortgage, existingLender, hasHelpToBuyEquityLoan, isLimitedCompanySale. None of these pass the logbook test — they describe this specific transaction, not the property itself.
-- **Ownership** = self-asserted claim of legal ownership linking a Person or Organisation DID to a Title URN, with status and verification level. The owner starts by asserting this themselves — their ownership claim is what establishes the right to sell. The evidence (proprietorship register) lives on the Title entity — Ownership is the claim, Title holds the evidence.
+- **SellerCapacity** = self-asserted claim of legal ownership linking a Person or Organisation DID to a Title URN, with status and verification level. The owner starts by asserting this themselves — their ownership claim is what establishes the right to sell. The evidence (proprietorship register) lives on the Title entity — SellerCapacity is the claim, Title holds the evidence.
 
 ### 3.5 Existing Work
 
@@ -270,13 +270,13 @@ PDTF 2.0 uses OpenID standards for credential exchange:
 - Adapters and primary sources act as OID4VCI credential issuers
 - Each issuer publishes a credential issuer metadata document at `/.well-known/openid-credential-issuer`
 - Supported credential formats: `ldp_vc` (primary), `jwt_vc_json` (interoperability)
-- Credential types are PDTF-defined: `PropertyCredential`, `TitleCredential`, `OwnershipCredential`, `RepresentationCredential`, etc.
+- Credential types are PDTF-defined: `PropertyCredential`, `TitleCredential`, `SellerCapacityCredential`, `RepresentationCredential`, etc.
 - Pre-authorised code flow for adapter-initiated issuance (no user interaction needed for data lookups)
 - Authorization code flow for user-initiated credential requests
 
 **OID4VP (OpenID for Verifiable Presentations)** — how credentials are presented:
 - Participants present credentials to prove their relationship to a transaction
-- Presentation definition specifies which credential types are required (e.g. `OwnershipCredential` or `RepresentationCredential`)
+- Presentation definition specifies which credential types are required (e.g. `SellerCapacityCredential` or `RepresentationCredential`)
 - VP Token contains the Verifiable Presentation with the requested credentials
 - Used for both human-initiated flows (wallet) and machine-to-machine (API access)
 
@@ -292,7 +292,7 @@ PDTF 2.0 uses OpenID standards for credential exchange:
           "filter": {
             "type": "array",
             "contains": {
-              "enum": ["OwnershipCredential", "RepresentationCredential", "DelegatedConsentCredential"]
+              "enum": ["SellerCapacityCredential", "RepresentationCredential", "DelegatedConsentCredential"]
             }
           }
         }]
@@ -322,7 +322,7 @@ DIDs serve as identifiers for organisations, persons, and transactions within th
 ```
 urn:pdtf:uprn:{uprn}           → Property identifier
 urn:pdtf:titleNumber:{number}  → Title identifier
-urn:pdtf:ownership:{uuid}      → Ownership claim
+urn:pdtf:capacity:{uuid}      → SellerCapacity claim
 urn:pdtf:representation:{uuid} → Representation mandate (Organisation)
 urn:pdtf:consent:{uuid}        → Delegated consent
 urn:pdtf:offer:{uuid}          → Offer relationship
@@ -350,7 +350,7 @@ Transaction DID (did:web:moverly.com:transactions:abc123)
 
 To access restricted or confidential VCs (or the pre-composed state derived from them), a requester must:
 
-1. **Present a valid credential via OID4VP** — an Ownership, Representation, or DelegatedConsent credential proving their relationship to the transaction
+1. **Present a valid credential via OID4VP** — an SellerCapacity, Representation, or DelegatedConsent credential proving their relationship to the transaction
 2. **Prove control of their DID** — implicit in the OID4VP flow (the VP is signed by the holder's key)
 3. **Revocation check** — the presented credential must not be revoked (Bitstring Status List check)
 4. **termsOfUse filtering** — the system returns only VCs whose `termsOfUse` policy permits access for the requester's role
@@ -600,7 +600,7 @@ The overlap period ensures that credentials signed with the old key remain verif
 
 All issuers **must** support revocation via [W3C Bitstring Status List v2](https://www.w3.org/TR/vc-bitstring-status-list/). This is critical for:
 
-- **Ownership/Representation credentials** — must be revocable when a sale completes, a mandate is withdrawn, or a conveyancer is replaced
+- **SellerCapacity/Representation credentials** — must be revocable when a sale completes, a mandate is withdrawn, or a conveyancer is replaced
 - **Property data VCs** — revocable when data is superseded (e.g. new EPC issued, updated flood risk assessment)
 - **User DID credentials** — revocable when a user account is disabled or identity verification is invalidated
 - **Trust marks** — revocable when an entity's accreditation is withdrawn (complementing the trust mark's `exp`)
@@ -731,7 +731,7 @@ The pre-authorised code flow is typical for adapter-initiated issuance: the plat
 
 ### 9.4 Access Control for Adapter API
 
-1. Requester presents an **Ownership, Representation, or DelegatedConsent credential** via OID4VP
+1. Requester presents an **SellerCapacity, Representation, or DelegatedConsent credential** via OID4VP
 2. Adapter verifies the VP signature and the contained credential(s)
 3. Adapter checks credential is **not revoked** (Bitstring Status List)
 4. Adapter verifies its own **trust chain** is valid (federation metadata)
@@ -1038,7 +1038,7 @@ All architectural decisions made through v0.3 of this document are baked into th
 | Q2.2 | Trust-level conflict visibility | Conflict surfacing is a verifier/UI concern, not a spec requirement. All trust levels and sources are carried in the credentials themselves, so consumers can render them however they wish. | Apr 2026 |
 | Q3.3 | Credential `id` required | Yes — every credential MUST include an `id` for deduplication during state assembly. Privacy implications of credential correlation are secondary to assembly determinism. Format: `urn:pdtf:vc:{uuid}`. | Apr 2026 |
 | Q4.1 | Organisation DID hosting for small firms | Both self-hosted `did:web` and orchestrator-hosted DIDs are supported. In Phase 1 and beyond, small firms are expected to use orchestrator-hosted identities — orchestrators provide the account and auth UX firms already rely on, and manage DIDs on their behalf. | Apr 2026 |
-| Q4.2 | Lender access pattern | Lenders access transaction data via DelegatedConsentCredential (see sub-spec 02 §3.6). The buyer explicitly grants consent to a specific lender's Organisation DID per application. This composes with `termsOfUse.confidentiality: "restricted"` — restricted data requires either direct participation (Ownership / Representation / Offer) or an explicit DelegatedConsentCredential. No role-based lender pooling. | Apr 2026 |
+| Q4.2 | Lender access pattern | Lenders access transaction data via DelegatedConsentCredential (see sub-spec 02 §3.6). The buyer explicitly grants consent to a specific lender's Organisation DID per application. This composes with `termsOfUse.confidentiality: "restricted"` — restricted data requires either direct participation (SellerCapacity / Representation / Offer) or an explicit DelegatedConsentCredential. No role-based lender pooling. | Apr 2026 |
 | Q5.2 | Multiple issuers per path | Permitted and expected. Multiple commercial search providers, valuation services, and similar will legitimately issue credentials against the same entity:path combinations. Trust marks do not enforce exclusivity. | Apr 2026 |
 | Q6.1–Q6.3 | Migration strategy | Migration proceeds by running PDTF v1 and v2 operations in parallel. New transactions start on v2; in-flight transactions continue on v1 until they close. When all active transactions support v2 output, v1 is retired. State assembly supports both formats throughout the overlap. | Apr 2026 |
 
@@ -1055,7 +1055,7 @@ Decomposing the v1 monolithic property pack schema into entity-scoped schemas ra
 
 | # | Question | Preferred direction | Status |
 |---|----------|---------------------|--------|
-| Q7.1 | Where does the schema-level `ownership` object decompose to? | Top-level properties of v1 `ownership` (numberOfSellers, outstandingMortgage, existingLender, helpToBuyEquityLoan, limitedCompanySale, etc.) move to `Transaction.saleContext.*`. The legal interest being transferred (formerly `ownershipsToBeTransferred[]`) moves to the top level of the `Title` entity, because a `TitleCredential` fundamentally represents an ownership interest being conveyed. Supporting register evidence (register extract, charges) moves under a `title` sub-object on the `Title` entity. Note: this is the schema decomposition question — distinct from the entity-graph-level Ownership credential (the thin Person↔Title assertion, see sub-spec 02 §3.4), which is unchanged. | Preferred |
+| Q7.1 | Where does the schema-level `ownership` object decompose to? | Top-level properties of v1 `ownership` (numberOfSellers, outstandingMortgage, existingLender, helpToBuyEquityLoan, limitedCompanySale, etc.) move to `Transaction.saleContext.*`. The legal interest being transferred (formerly `ownershipsToBeTransferred[]`) moves to the top level of the `Title` entity, because a `TitleCredential` fundamentally represents an ownership interest being conveyed. Supporting register evidence (register extract, charges) moves under a `title` sub-object on the `Title` entity. Note: this is the schema decomposition question — distinct from the entity-graph-level SellerCapacity credential (the thin Person↔Title assertion, see sub-spec 02 §3.4), which is unchanged. | Preferred |
 | Q7.2 | Identifier for unregistered titles | `urn:pdtf:unregisteredTitle:{uuid}` per sub-spec 03 §10.1, but UUID derivation method (v4 random vs v5 deterministic from UPRN) and first-registration transition mechanism still open. This is a hard dependency for Q7.1 — `Title.ownershipToBeTransferred` applies to registered and unregistered titles equally, so the identifier question blocks finalisation. | Open |
 | Q7.3 | Field-level seams between Property and Title | The boundary between physical property facts (EPC, flood, construction) and legal title facts (charges, proprietorship, lease terms) is clear in principle, but edge cases exist (e.g., boundary disputes, rights of way). Validate on a field-by-field basis during schema review. | Open |
 
