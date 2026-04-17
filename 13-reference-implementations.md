@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (Draft)
 **Date:** 1 April 2026
-**Author:** Ed Molyneux / Moverly
+**Author:** Ed Molyneux
 **Status:** Draft
 **Parent:** [00 — Architecture Overview](./00-architecture-overview.md)
 
@@ -135,7 +135,7 @@ interface ValidationResult {
 type TrustLevel =
   | 'root'          // Primary source issuer (e.g., HMLR for title data)
   | 'delegated'     // Issuer with explicit delegation from root
-  | 'proxy'         // Trusted proxy (e.g., Moverly aggregating data)
+  | 'proxy'         // Trusted proxy (e.g., a platform aggregating data)
   | 'self-asserted' // Seller/owner self-declaration
   | 'unknown';      // Issuer not found in federation
 
@@ -409,12 +409,12 @@ const signer = createLocalSigner({
 import { createGcpKmsSigner } from '@pdtf/vc-builder/kms/gcp';
 
 const signer = createGcpKmsSigner({
-  projectId: 'moverly-prod',
+  projectId: 'pdtf-platform-prod',
   locationId: 'europe-west2',
   keyRingId: 'pdtf-signing',
   keyId: 'property-credentials',
   keyVersion: '1',
-  did: 'did:web:moverly.com',
+  did: 'did:web:platform.example.com',
   verificationMethodFragment: '#key-1',
 });
 ```
@@ -474,7 +474,7 @@ const credential = await builder.buildCredential({
     retrievedAt: '2026-03-24T12:00:00Z',
   }],
   status: {
-    statusListCredential: 'https://moverly.com/.well-known/status/1',
+    statusListCredential: 'https://platform.example.com/.well-known/status/1',
     statusListIndex: 42,
     statusPurpose: 'revocation',
   },

@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (Draft)
 **Date:** 24 March 2026
-**Author:** Ed Molyneux / Moverly
+**Author:** Ed Molyneux
 **Status:** Draft
 **Implements:** [Sub-spec 14 — Credential Revocation](../14-credential-revocation.md)
 
@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-This document specifies the technical implementation of credential revocation infrastructure for Moverly's PDTF 2.0 backend. It translates the W3C Bitstring Status List protocol (Sub-spec 14) into concrete infrastructure, services, and operational procedures.
+This document specifies the technical implementation of credential revocation infrastructure for the PDTF 2.0 reference backend. It translates the W3C Bitstring Status List protocol (Sub-spec 14) into concrete infrastructure, services, and operational procedures.
 
 **What this covers:**
 
@@ -82,7 +82,7 @@ This document specifies the technical implementation of credential revocation in
                                     │  propdata.org.uk │
                                     │  /status/...     │
                                     │                  │
-                                    │  moverly.com     │
+                                    │  platform.example.com     │
                                     │  /status/...     │
                                     └────────┬─────────┘
                                              │
@@ -176,7 +176,7 @@ statusLists:
 
 The protocol spec (Sub-spec 14 §6) shows a SQL schema. We use Firestore instead because:
 
-1. **Existing infrastructure.** Moverly's backend is Firebase. No new database to provision/maintain.
+1. **Existing infrastructure.** The reference backend uses Firebase. No new database to provision/maintain.
 2. **Atomic transactions.** Firestore transactions give us atomic index allocation without explicit row locking.
 3. **Triggers.** Firestore `onWrite` triggers drive the publish pipeline — no separate event bus needed.
 4. **Scaling.** Firestore auto-scales. Status list operations are low-volume (tens of revocations per hour, not thousands per second).
@@ -300,7 +300,7 @@ export interface StatusListConfig {
   defaultCapacity: number;
   /** Base URLs for status list endpoints */
   adapterBaseUrl: string;    // e.g. "https://adapters.propdata.org.uk/status"
-  platformBaseUrl: string;   // e.g. "https://moverly.com/status"
+  platformBaseUrl: string;   // e.g. "https://platform.example.com/status"
   /** GCS bucket for published status list VCs */
   gcsBucket: string;
   /** CDN cache TTL in seconds */
@@ -621,7 +621,7 @@ export class IndexAllocator {
   /** Extract adapter path from DID for URL construction */
   private resolveAdapterPath(issuerDid: string): string {
     // did:web:adapters.propdata.org.uk:epc → "epc"
-    // did:web:moverly.com → "platform"
+    // did:web:platform.example.com → "platform"
     const parts = issuerDid.split(':');
     if (parts.length > 3 && parts[2] === 'adapters.propdata.org.uk') {
       return parts.slice(3).join('/');

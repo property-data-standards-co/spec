@@ -7,7 +7,7 @@ description: "PDTF 2.0 conformance levels, test vectors, and interop protocols."
 
 **Version:** 0.1 (Draft)
 **Date:** 15 April 2026
-**Author:** Ed Molyneux / Moverly
+**Author:** Ed Molyneux
 
 **Parent:** [00 — Architecture Overview](../00-architecture-overview/)
 

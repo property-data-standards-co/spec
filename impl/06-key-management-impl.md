@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (Draft)
 **Date:** 1 April 2026
-**Author:** Ed Molyneux / Moverly
+**Author:** Ed Molyneux
 **Status:** Draft
 **Implements:** [Sub-spec 06 — Key Management](../06-key-management.md)
 
@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-This document specifies the technical implementation of key management for Moverly's PDTF 2.0 backend. It translates the protocol-level decisions in Sub-spec 06 (algorithm selection, key categories, KMS architecture) into concrete infrastructure, service code, and operational procedures.
+This document specifies the technical implementation of key management for the PDTF 2.0 reference backend. It translates the protocol-level decisions in Sub-spec 06 (algorithm selection, key categories, KMS architecture) into concrete infrastructure, service code, and operational procedures.
 
 **What this covers:**
 
@@ -39,12 +39,12 @@ This document specifies the technical implementation of key management for Mover
 
 ### 2.1 GCP Projects
 
-Three GCP projects isolate key material by trust level. All within the `moverly.com` organisation.
+Three GCP projects isolate key material by trust level. All within the `propdata.org.uk` organisation.
 
 | Project | Purpose | Key Types | Protection |
 |---------|---------|-----------|------------|
 | `pdtf-adapters-prod` | Trusted proxy adapter signing keys | Adapter keys | HSM |
-| `pdtf-platform-prod` | Moverly organisational identity + status lists | Platform key | HSM |
+| `pdtf-platform-prod` | Platform organisational identity + status lists | Platform key | HSM |
 | `pdtf-users-prod` | Custodial user identity keys | User keys | SOFTWARE |
 
 Staging equivalents: `pdtf-adapters-staging`, `pdtf-platform-staging`, `pdtf-users-staging`. All staging keys use SOFTWARE protection (no HSM costs for dev/test).
@@ -127,7 +127,7 @@ resource "google_kms_key_ring" "platform" {
 }
 
 resource "google_kms_crypto_key" "platform_signing" {
-  name     = "moverly-platform-signing-key"
+  name     = "pdtf-platform-signing-key"
   key_ring = google_kms_key_ring.platform.id
   purpose  = "ASYMMETRIC_SIGN"
 
@@ -1797,7 +1797,7 @@ DID documents for `did:web` identifiers must be served at well-known HTTPS URLs.
 
 | DID | URL |
 |-----|-----|
-| `did:web:moverly.com` | `https://moverly.com/.well-known/did.json` |
+| `did:web:platform.example.com` | `https://platform.example.com/.well-known/did.json` |
 | `did:web:adapters.propdata.org.uk:hmlr` | `https://adapters.propdata.org.uk/hmlr/did.json` |
 | `did:web:adapters.propdata.org.uk:epc` | `https://adapters.propdata.org.uk/epc/did.json` |
 | `did:web:adapters.propdata.org.uk:ea-flood` | `https://adapters.propdata.org.uk/ea-flood/did.json` |
@@ -1902,7 +1902,7 @@ Good for: ultra-low latency, no cold starts, works even if Cloud Functions are d
 
 ### 5.4 Platform DID Document
 
-The platform DID (`did:web:moverly.com`) is served from `https://moverly.com/.well-known/did.json`. This can be a static file deployed with the main moverly.com site, updated on the rare occasions when the platform key is rotated.
+The platform DID (`did:web:platform.example.com`) is served from `https://platform.example.com/.well-known/did.json`. This can be a static file deployed with the main platform site, updated on the rare occasions when the platform key is rotated.
 
 ```json
 {
@@ -1910,26 +1910,26 @@ The platform DID (`did:web:moverly.com`) is served from `https://moverly.com/.we
     "https://www.w3.org/ns/did/v1",
     "https://w3id.org/security/suites/ed25519-2020/v1"
   ],
-  "id": "did:web:moverly.com",
+  "id": "did:web:platform.example.com",
   "verificationMethod": [
     {
-      "id": "did:web:moverly.com#key-1",
+      "id": "did:web:platform.example.com#key-1",
       "type": "Ed25519VerificationKey2020",
-      "controller": "did:web:moverly.com",
+      "controller": "did:web:platform.example.com",
       "publicKeyMultibase": "z6Mkq..."
     }
   ],
-  "assertionMethod": ["did:web:moverly.com#key-1"],
+  "assertionMethod": ["did:web:platform.example.com#key-1"],
   "service": [
     {
-      "id": "did:web:moverly.com#tir",
+      "id": "did:web:platform.example.com#tir",
       "type": "TrustedIssuerRegistry",
-      "serviceEndpoint": "https://tir.moverly.com/v1/registry"
+      "serviceEndpoint": "https://tir.platform.example.com/v1/registry"
     },
     {
-      "id": "did:web:moverly.com#status",
+      "id": "did:web:platform.example.com#status",
       "type": "BitstringStatusList",
-      "serviceEndpoint": "https://status.moverly.com/credentials/status/"
+      "serviceEndpoint": "https://status.platform.example.com/credentials/status/"
     }
   ]
 }
@@ -1963,11 +1963,11 @@ const unsignedVc = {
     // ... title data from HMLR
   },
   credentialStatus: {
-    id: 'https://status.moverly.com/credentials/status/1#42',
+    id: 'https://status.platform.example.com/credentials/status/1#42',
     type: 'BitstringStatusListEntry',
     statusPurpose: 'revocation',
     statusListIndex: '42',
-    statusListCredential: 'https://status.moverly.com/credentials/status/1',
+    statusListCredential: 'https://status.platform.example.com/credentials/status/1',
   },
 };
 
@@ -2379,7 +2379,7 @@ Against `pdtf-*-staging` projects with real Cloud KMS (SOFTWARE protection).
 
 ### 9.1 Package Publishing
 
-`@pdtf/key-manager` is published to the private Moverly npm registry (or GitHub Packages under `property-data-standards-co`).
+`@pdtf/key-manager` is published to the private npm registry (or GitHub Packages under `property-data-standards-co`).
 
 ```json
 // packages/key-manager/package.json
@@ -2423,7 +2423,7 @@ Against `pdtf-*-staging` projects with real Cloud KMS (SOFTWARE protection).
 
 2. Platform key: Generate + export public key + publish DID doc
    └── runbooks/provision-platform-key.sh
-   └── Deploy .well-known/did.json to moverly.com
+   └── Deploy .well-known/did.json to platform site
 
 3. Adapter keys: Generate + export + publish DID docs
    └── runbooks/provision-adapter.sh (per adapter)
@@ -2574,7 +2574,7 @@ At 100K users, the cost is meaningful but still modest relative to revenue. The 
 | ID | Decision | Rationale |
 |----|----------|-----------|
 | I1 | Terraform for all KMS infrastructure | Reproducible, auditable, no manual key creation |
-| I2 | Firestore for key metadata | Same database as existing Moverly backend, simplifies integration |
+| I2 | Firestore for key metadata | Same database as existing platform backend, simplifies integration |
 | I3 | Cloud Functions for DID document serving | Serverless, auto-scaling, easy to deploy alongside existing Functions |
 | I4 | Vitest for testing | Modern, fast, ESM-native — aligns with project standards |
 | I5 | `@noble/curves` for local verification | Pure JS, audited, no native dependencies, works in browser |

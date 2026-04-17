@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (Draft)
 **Date:** 24 March 2026
-**Author:** Ed Molyneux / Moverly
+**Author:** Ed Molyneux
 **Status:** Draft
 **Implements:** [Sub-spec 03 — DID Methods & Identifiers](../03-did-methods.md)
 
@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-This document specifies the technical implementation of DID infrastructure for Moverly's PDTF 2.0 backend. It covers how we create, host, resolve, cache, and lifecycle-manage DID documents for all entity types.
+This document specifies the technical implementation of DID infrastructure for the PDTF 2.0 reference backend. It covers how we create, host, resolve, cache, and lifecycle-manage DID documents for all entity types.
 
 **Relationship to other impl specs:**
 
@@ -48,7 +48,7 @@ firestore/
 ├── transactionDids/
 │   └── {transactionId}                    # One doc per transaction
 │       ├── transactionId: string           # e.g. "abc123"
-│       ├── did: string                     # "did:web:moverly.com:transactions:abc123"
+│       ├── did: string                     # "did:web:platform.example.com:transactions:abc123"
 │       ├── kmsKeyPath: string              # Reference to key in pdtf-platform-prod
 │       ├── activeKeyVersion: number
 │       ├── keyVersions: array              # Key version metadata (same as pdtfKeys)
@@ -83,7 +83,7 @@ export async function createTransactionDid(
   kms: KmsClient,
 ): Promise<{ did: string }> {
   const { transactionId, propertyUrns, titleUrns } = params;
-  const did = `did:web:moverly.com:transactions:${transactionId}`;
+  const did = `did:web:platform.example.com:transactions:${transactionId}`;
 
   // 1. Create a dedicated signing key for this transaction
   // Transaction keys go in the platform project (not adapters or users)
@@ -133,7 +133,7 @@ export async function createTransactionDid(
 
 ### 2.3 Transaction DID Document Serving
 
-Transaction DID documents are static JSON files served from Cloud Storage behind Cloud CDN, at `https://moverly.com/transactions/{id}/did.json`.
+Transaction DID documents are static JSON files served from Cloud Storage behind Cloud CDN, at `https://platform.example.com/transactions/{id}/did.json`.
 
 ```typescript
 // services/transaction/src/publish-did-document.ts
@@ -164,12 +164,12 @@ export async function publishTransactionDidDocument(
           {
             id: `${did}#pdtf-api`,
             type: 'PdtfTransactionEndpoint',
-            serviceEndpoint: `https://api.moverly.com/v2/transactions/${transactionId}`,
+            serviceEndpoint: `https://api.platform.example.com/v2/transactions/${transactionId}`,
           },
           {
             id: `${did}#mcp`,
             type: 'McpEndpoint',
-            serviceEndpoint: `https://api.moverly.com/mcp/transactions/${transactionId}`,
+            serviceEndpoint: `https://api.platform.example.com/mcp/transactions/${transactionId}`,
           },
         ]
       : [], // No service endpoints for deactivated transactions
@@ -178,7 +178,7 @@ export async function publishTransactionDidDocument(
   // Add controller and alsoKnownAs
   const fullDocument = {
     ...didDocument,
-    controller: 'did:web:moverly.com',
+    controller: 'did:web:platform.example.com',
     ...(data.propertyUrns?.length ? { alsoKnownAs: data.propertyUrns } : {}),
     ...(data.status === 'deactivated' ? { deactivated: true } : {}),
   };
@@ -270,7 +270,7 @@ Organisations (conveyancer firms, estate agencies) host their own DID documents 
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Firm uses    │     │  Firm hosts   │     │  Moverly     │
+│  Firm uses    │     │  Firm hosts   │     │  Platform     │
 │  @pdtf/       │────▶│  did.json at  │────▶│  verifies +  │
 │  did-tools    │     │  their domain │     │  registers   │
 │  CLI          │     │               │     │  Trust Mark  │
@@ -422,7 +422,7 @@ export function registerOrgInit(program: Command): void {
       console.log(`   1. Host ${didDocPath} at https://${opts.domain}/.well-known/did.json`);
       console.log(`   2. Ensure HTTPS is configured for ${opts.domain}`);
       console.log(`   3. Verify: npx @pdtf/did-tools org-verify --did ${did}`);
-      console.log(`   4. Register with Moverly to be added to the Trusted Issuer Registry`);
+      console.log(`   4. Register with the platform operator to be added to the Trusted Issuer Registry`);
       console.log(`   5. Store the private key in a secure key management system (e.g., AWS KMS, Google Cloud KMS)`);
       console.log(`      Do NOT keep it as a file in production.\n`);
     });
@@ -779,7 +779,7 @@ interface DidWebResolverOptions {
 
 // Entity-specific cache TTLs per Sub-spec 03 §7.3
 const CACHE_TTLS: Record<string, number> = {
-  'moverly.com:transactions:': 3600_000,      // 1 hour for transactions
+  'platform.example.com:transactions:': 3600_000,      // 1 hour for transactions
   'adapters.propdata.org.uk:': 86400_000,     // 24 hours for adapters
   default: 86400_000,                          // 24 hours for organisations
 };
@@ -1077,12 +1077,12 @@ resource "google_storage_bucket_iam_member" "did_docs_public_read" {
 gs://pdtf-did-documents-prod/
 ├── transactions/
 │   ├── abc123/
-│   │   └── did.json           # did:web:moverly.com:transactions:abc123
+│   │   └── did.json           # did:web:platform.example.com:transactions:abc123
 │   ├── def456/
 │   │   └── did.json
 │   └── ...
 └── .well-known/
-    └── did.json               # did:web:moverly.com (platform DID)
+    └── did.json               # did:web:platform.example.com (platform DID)
 ```
 
 Adapter DID documents are served by the Cloud Function defined in impl/06 (from Firestore, not GCS). Organisation DID documents are hosted by the firms themselves. Only transaction DIDs and the platform DID are in this bucket.
@@ -1092,10 +1092,10 @@ Adapter DID documents are served by the Cloud Function defined in impl/06 (from 
 Transaction DID documents are served via Firebase Hosting with a rewrite to GCS:
 
 ```json
-// firebase.json (moverly.com site)
+// firebase.json (platform site)
 {
   "hosting": {
-    "site": "moverly-platform",
+    "site": "pdtf-platform",
     "rewrites": [
       {
         "source": "/transactions/*/did.json",
@@ -1198,7 +1198,7 @@ resource "google_monitoring_alert_policy" "org_did_verification_failure" {
   "didWebUrls": [
     { "did": "did:web:example.com", "url": "https://example.com/.well-known/did.json" },
     { "did": "did:web:example.com:path:sub", "url": "https://example.com/path/sub/did.json" },
-    { "did": "did:web:moverly.com:transactions:abc123", "url": "https://moverly.com/transactions/abc123/did.json" }
+    { "did": "did:web:platform.example.com:transactions:abc123", "url": "https://platform.example.com/transactions/abc123/did.json" }
   ],
   "urnValidation": {
     "valid": [
@@ -1227,7 +1227,7 @@ resource "google_monitoring_alert_policy" "org_did_verification_failure" {
 |------|---------------|-------|
 | GCS storage (DID documents) | ~$0.20 | Small JSON files, low volume |
 | GCS operations | ~$0.50 | Read-heavy, CDN absorbs most |
-| Firebase Hosting / CDN | ~$2.00 | Included in existing Moverly hosting |
+| Firebase Hosting / CDN | ~$2.00 | Included in existing platform hosting |
 | KMS keys for transaction DIDs | ~$0.06/txn | SOFTWARE keys, created per transaction |
 | Firestore (DID metadata) | ~$1.00 | Low volume reads/writes |
 | Cloud Functions (verification) | ~$0.50 | Daily org verification |
@@ -1243,7 +1243,7 @@ At 1,000 active transactions: ~$65/month for transaction DID KMS keys. Modest.
 |---|----------|--------|
 | DQ1 | Should transaction DIDs get their own KMS key ring or share the platform key ring? | Leaning separate ring: `transaction-keys` |
 | DQ2 | Should we offer hosted DID documents for small firms that can't self-host? e.g. `did:web:registry.propdata.org.uk:firms:{sraNumber}` | Probably yes — reduces adoption friction |
-| DQ3 | How do we handle the platform DID document (`did:web:moverly.com`)? Static file deployed with moverly.com, or dynamic from Firestore? | Static — rarely changes |
+| DQ3 | How do we handle the platform DID document (`did:web:platform.example.com`)? Static file deployed with the platform, or dynamic from Firestore? | Static — rarely changes |
 | DQ4 | Should the org verification job run more frequently than daily? | Daily sufficient for launch; weekly for low-risk, hourly for high-value |
 | DQ5 | Do we need a DID document builder web UI for firms, or is the CLI sufficient? | CLI for tech-savvy firms, web UI later for broader adoption |
 

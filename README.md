@@ -48,7 +48,7 @@ The Property Data Trust Framework version 2.0 — W3C Verifiable Credentials, de
 
 ## Author
 
-Ed Molyneux / Moverly
+Ed Molyneux
 
 ## License
 
